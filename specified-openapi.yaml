@@ -1,0 +1,135 @@
+openapi: 3.0.0
+info:
+  title: Specified.ai API
+  description: Transform standards documents into machine-readable requirements.
+  termsOfService: https://specified.ai/terms/
+  contact:
+    name: API Support
+    url: https://www.kweri.nl/support
+    email: support@kweri.nl
+  version: '1.0'
+externalDocs:
+  description: More about this API
+  url: https://github.com/kweri-nl/spec
+servers:
+  - url: https://api.specified.ai/v1
+    description: Main (production) server
+  - url: https://staging-api.specified.ai
+    description: Internal staging server for testing
+
+paths:
+  /text2req:
+    post:
+      summary: Transform text to structured requirements.
+      description: Transform text to a list of structured requirements.
+      requestBody:
+        description: Text written in natural language possibly containing one or more requirements.
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':    # status code
+          description: A JSON array with structured requirements.
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  #type: string
+                  #example: "Lorem ipsum dolor amet"
+                  $ref: '#/components/schemas/Requirements'
+        '404':
+          description: Error
+  /req2ld:
+    post:
+      summary: Transform structured requirements to Linked Data.
+      description: Transform structured requirements to Linked Data using the SPEC ontology.
+      requestBody:
+        description: A JSON array with structured requirements.
+        required: true
+        content:
+          application/json:
+            schema: 
+              type: array
+              items: 
+                type: string
+                example: Lorem ipsum dolor amet.
+      responses:
+        '200':
+          description: The RDF data of the requirements.
+          content:
+            application/turtle:
+              schema:
+                $ref: '#/components/schemas/Requirements'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Requirements'
+            application/json-ld:
+              schema:
+                $ref: '#/components/schemas/Requirements'
+        '404':
+          description: Error
+  
+  /std2req:
+    post:
+      summary: Transform a standards document to structured requirements.
+      description: Extract structured requirements from XML documents using the ANSI/NISO Z39.102-2017 Standards Tag Suite (STS).
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':    # status code
+          description: A JSON array with structured requirements.
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: '#/components/schemas/Requirements'
+        '404':
+          description: Error
+                  
+  /std2ld:
+    post:
+      summary: Transform a standards document to Linked Data.
+      description: Transform a standards documents using the ANSI/NISO Z39.102-2017 Standards Tag Suite (STS) to requirements as Linked Data using the SPEC ontology.
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: The RDF data of the requirements.
+          content:
+            application/turtle:
+              schema:
+                $ref: '#/components/schemas/Requirements'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Requirements'
+            application/json-ld:
+              schema:
+                $ref: '#/components/schemas/Requirements'
+        '404':
+          description: Error
+    
+components:
+  schemas:
+    Requirements:
+      required:
+        - sentence
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid  
+        sentence:
+          type: string
+          example: Lorem impsum dolor amet.
