@@ -1,16 +1,32 @@
 openapi: 3.0.0
 info:
-  title: Specified.ai API
-  description: Transform standards documents into machine-readable requirements.
-  termsOfService: https://specified.ai/terms/
+  title: Specified API
+  description: >-
+    Transform standards documents into machine-readable requirements.
+    
+    ***
+    
+    ## API Reference
+  
+    The Specified API is organized around [REST](http://en.wikipedia.org/wiki/Representational_State_Transfer). Our API has predictable resource-oriented URLs, accepts [form-encoded](https://en.wikipedia.org/wiki/POST_(HTTP)#Use_for_submitting_web_forms) request bodies, returns [JSON-encoded](http://www.json.org/) responses, and uses standard HTTP response codes, authentication, and verbs.
+
+    ***
+
+    ## API Authentication
+    
+    The Specified API uses [API keys](/docs/keys) to authenticate requests.
+    Authentication to the API is performed via HTTP Basic Auth. Provide your APP ID and API key as the basic auth username value. You do not need to provide a password. All API requests must be made over HTTPS. Calls made over plain HTTP will fail or calls without authentication will fail.
+      
+      
+      To request API keys [contact support](mailto:support@specified.ai).
+      
+      
+  termsOfService: https://specified.ai/terms-of-service.html
   contact:
-    name: API Support
-    url: https://www.kweri.nl/support
-    email: support@kweri.nl
+    name: Specified.ai
+    url: https://specfied.ai
+    email: support@specified.ai
   version: '1.0'
-externalDocs:
-  description: More about this API
-  url: https://github.com/kweri-nl/spec
 servers:
   - url: https://api.specified.ai/v1
     description: Main (production) server
@@ -20,8 +36,8 @@ servers:
 paths:
   /text2req:
     post:
-      summary: Transform text to structured requirements.
-      description: Transform text to a list of structured requirements.
+      summary: Convert text to structured requirements.
+      description: Convert text to a list of structured requirements.
       requestBody:
         description: Text written in natural language possibly containing one or more requirements.
         required: true
@@ -44,8 +60,8 @@ paths:
           description: Error
   /req2ld:
     post:
-      summary: Transform structured requirements to Linked Data.
-      description: Transform structured requirements to Linked Data using the SPEC ontology.
+      summary: Convert structured requirements to Linked Data.
+      description: Convert structured requirements to Linked Data using the SPEC ontology.
       requestBody:
         description: A JSON array with structured requirements.
         required: true
@@ -74,8 +90,8 @@ paths:
   
   /std2req:
     post:
-      summary: Transform a standards document to structured requirements.
-      description: Extract structured requirements from XML documents using the ANSI/NISO Z39.102-2017 Standards Tag Suite (STS).
+      summary: Convert a standards document to structured requirements.
+      description: Convert an XML document that uses the ANSI/NISO Z39.102-2017 Standards Tag Suite (STS) to structured requirements.
       requestBody:
         content:
           application/xml:
@@ -96,8 +112,8 @@ paths:
                   
   /std2ld:
     post:
-      summary: Transform a standards document to Linked Data.
-      description: Transform a standards documents using the ANSI/NISO Z39.102-2017 Standards Tag Suite (STS) to requirements as Linked Data using the SPEC ontology.
+      summary: Convert a standards document to Linked Data.
+      description: Convenrt an XML document that uses the ANSI/NISO Z39.102-2017 Standards Tag Suite (STS) to requirements as Linked Data using the SPEC ontology.
       requestBody:
         content:
           application/xml:
@@ -133,3 +149,15 @@ components:
         sentence:
           type: string
           example: Lorem impsum dolor amet.
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+    appId:
+      type: apiKey
+      in: header
+      name: X-APP-ID
+security:
+  - apiKey: []
+    appId:  []
