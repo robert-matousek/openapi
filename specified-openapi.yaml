@@ -36,7 +36,7 @@ servers:
 paths:
   '/concepts/tag':
     post:
-      summary: Hyperlink to concepts in the thesaurus
+      summary: Hyperlink to concepts in a thesaurus
       description: Takes a string of text, a thesaurus identifier, and a language code, and tags concepts in the text with hyperlinks to the thesaurus.
       operationId: replaceHyperlinks
       requestBody:
@@ -103,19 +103,6 @@ components:
           type: string
           example: '<a href="https://example.com/word/brown">brown</a> fox jumps over the <a href="https://example.com/word/dog">dog</a>.'
     
-components:
-  schemas:
-    Requirements:
-      required:
-        - sentence
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid  
-        sentence:
-          type: string
-          example: Lorem impsum dolor amet.
   securitySchemes:
     apiKey:
       type: apiKey
