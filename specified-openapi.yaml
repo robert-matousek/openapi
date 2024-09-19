@@ -34,107 +34,74 @@ servers:
     description: Internal staging server for testing
 
 paths:
-  /text2req:
+  '/concepts/tag':
     post:
-      summary: Convert text to structured requirements.
-      description: Convert text to a list of structured requirements.
+      summary: Hyperlink to concepts in the thesaurus
+      description: Takes a string of text, a thesaurus identifier, and a language code, and tags concepts in the text with hyperlinks to the thesaurus.
+      operationId: replaceHyperlinks
       requestBody:
-        description: Text written in natural language possibly containing one or more requirements.
-        required: true
-        content:
-          text/plain:
-            schema:
-              type: string
-      responses:
-        '200':    # status code
-          description: A JSON array with structured requirements.
-          content:
-            application/json:
-              schema: 
-                type: array
-                items: 
-                  #type: string
-                  #example: "Lorem ipsum dolor amet"
-                  $ref: '#/components/schemas/Requirements'
-        '404':
-          description: Error
-  /req2ld:
-    post:
-      summary: Convert structured requirements to Linked Data.
-      description: Convert structured requirements to Linked Data using the SPEC ontology.
-      requestBody:
-        description: A JSON array with structured requirements.
+        description: Input text, thesaurus identifier, and language code
         required: true
         content:
           application/json:
-            schema: 
-              type: array
-              items: 
-                type: string
-                example: Lorem ipsum dolor amet.
+            schema:
+              $ref: '#/components/schemas/ReplaceHyperlinksRequest'
       responses:
         '200':
-          description: The RDF data of the requirements.
-          content:
-            application/turtle:
-              schema:
-                $ref: '#/components/schemas/Requirements'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Requirements'
-            application/json-ld:
-              schema:
-                $ref: '#/components/schemas/Requirements'
-        '404':
-          description: Error
-  
-  /std2req:
-    post:
-      summary: Convert a standards document to structured requirements.
-      description: Convert an XML document that uses the ANSI/NISO Z39.102-2017 Standards Tag Suite (STS) to structured requirements.
-      requestBody:
-        content:
-          application/xml:
-            schema:
-              type: string
-              format: binary
-      responses:
-        '200':    # status code
-          description: A JSON array with structured requirements.
+          description: The modified text with hyperlinks
           content:
             application/json:
-              schema: 
-                type: array
-                items:
-                  $ref: '#/components/schemas/Requirements'
-        '404':
-          description: Error
-                  
-  /std2ld:
-    post:
-      summary: Convert a standards document to Linked Data.
-      description: Convenrt an XML document that uses the ANSI/NISO Z39.102-2017 Standards Tag Suite (STS) to requirements as Linked Data using the SPEC ontology.
-      requestBody:
-        content:
-          application/xml:
-            schema:
-              type: string
-              format: binary
-      responses:
-        '200':
-          description: The RDF data of the requirements.
+              schema:
+                $ref: '#/components/schemas/ReplaceHyperlinksResponse'
+        '400':
+          description: Invalid input provided
           content:
-            application/turtle:
+            application/json:
               schema:
-                $ref: '#/components/schemas/Requirements'
-            application/xml:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining the invalid input.
+                    example: "Invalid thesaurus URI or language code."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
               schema:
-                $ref: '#/components/schemas/Requirements'
-            application/json-ld:
-              schema:
-                $ref: '#/components/schemas/Requirements'
-        '404':
-          description: Error
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message describing what went wrong.
+                    example: "Error processing the text."
+
+components:
+  schemas:
+    ReplaceHyperlinksRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Input text.
+          example: "The quick brown fox jumps over the lazy dog."
+        uri:
+          type: string
+          description: Identifier (URI) of the thesaurus.
+        language:
+          type: string
+          description: Language code to process the text (e.g., 'en' for English, 'nl' for Dutch).          
+      required:
+        - text
+        - uri
+        - language
+
+    ReplaceHyperlinksResponse:
+      type: object
+      properties:
+        linkedText:
+          type: string
+          example: '<a href="https://example.com/word/brown">brown</a> fox jumps over the <a href="https://example.com/word/dog">dog</a>.'
     
 components:
   schemas:
