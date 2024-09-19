@@ -36,8 +36,8 @@ servers:
 paths:
   '/concepts/tag':
     post:
-      summary: Hyperlink to concepts in a thesaurus
-      description: Takes a string of text, a thesaurus identifier, and a language code, and tags concepts in the text with hyperlinks to the thesaurus.
+      summary: Hyperlink to concepts in a SKOS thesaurus
+      description: Takes a string of text, a thesaurus identifier (URI), and a language code, and tags concepts in the text with hyperlinks to the thesaurus.
       operationId: replaceHyperlinks
       requestBody:
         description: Input text, thesaurus identifier, and language code
@@ -75,6 +75,54 @@ paths:
                     type: string
                     description: Error message describing what went wrong.
                     example: "Error processing the text."
+
+  '/concepts/process':
+    get:
+      summary: "Preprocess concepts in a SKOS thesaurus"
+      description: "Fetches and processes RDF data from a given URL."
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uri
+            description: "The URL of the RDF file."
+            example: "http://example.com/data.rdf"
+        - name: rdf_format
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^(xml|json|turtle)$"
+            description: "The format of the RDF file. Allowed values: xml, json, turtle."
+            example: "turtle"
+        - name: uri
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            description: "The thesaurus identifier (URI)."
+            example: "http://example.com/scheme"
+      responses:
+        '200':
+          description: "Successful response indicating that the RDF data was processed."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: "A message providing additional information about the processing result."
+                    example: "The RDF data was processed successfully."
+        '400':
+          description: "Bad Request. The request was invalid or cannot be otherwise served."
+        '404':
+          description: "Not Found. The requested resource could not be found."
+        '500':
+          description: "Internal Server Error. A generic error occurred on the server."
 
 components:
   schemas:
