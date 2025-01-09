@@ -34,53 +34,6 @@ servers:
     description: Internal staging server for testing
 
 paths:
-
-  '/requirements/extract':
-    post:
-      summary: "Extract requirements from written text"
-      description: |
-        This endpoint accepts a plain text input and extracts specific requirements from the text. It processes the input to identify requirements, returning a list of extracted requirements in the response.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExtractRequest'
-      responses:
-        '200':
-          description: "A list of extracted requirements."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExtractRequirementResponse'
-        '400':
-          description: "Bad request, invalid input provided"
-        '500':
-          description: "Internal server error, extraction failed"
-          
-  '/requirements/parse':
-    post:
-      summary: "Parse a written requirement into a graph"
-      description: |
-        Converts a textual requirement into a structured graph representation. This endpoint accepts plain text input describing a requirement and processes it to generate a JSON structure that represents the requirement as a graph. The graph includes conditions, systems, and performances.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-               $ref: '#/components/schemas/ParseRequirementRequest'
-      responses:
-        '200':
-          description: "JSON structure generated successfully"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ParseRequirementResponse'
-        '400':
-          description: "Bad request, invalid input provided"
-        '500':
-          description: "Internal server error, conversion failed"
-
   '/api/concepts/process':
     post:
       summary: "Process SKOS concepts"
@@ -165,6 +118,48 @@ paths:
                     type: string
                     description: "Details about the error."
                     example: "An unexpected error occurred while processing the RDF data."
+
+  '/api/concepts/search':
+    post:
+      summary: "Find concepts in a text or a document"
+      description: ""
+      operationId: searchConcepts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchConceptsRequest'
+      responses:
+        '200':
+          description: "The hits, non-hits and configuration."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchConceptsResponse'
+        '400':
+          description: "Invalid input provided. Either missing required fields or incorrect values."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: "Error message explaining the invalid input."
+                    example: "Missing required fields or invalid URIs."
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: "Error message describing what went wrong."
+                    example: "Error processing the text."
+                    
 
   '/api/concepts/tag/text':
     post:
@@ -252,106 +247,216 @@ paths:
                     description: "Error message describing the internal server error."
                     example: "Error processing the document."
 
-  '/qna/ask':
+  '/api/concepts/export':
     post:
-      summary: "Ask a question to the QnA system"
-      description: |
-        Sends a question to the QnA system and retrieves an answer. Optionally, the response can include hyperlinks to relevant concepts based on the `hyperlink_concepts` flag.
+      summary: Export a list of concepts to a document.
+      description: Exports a list of concepts (each with a term and a URI) to a document in the specified format (CSV, HTML, or Word).
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QnARequest'
+              $ref: '#/components/schemas/ConvertConceptsRequest'
       responses:
         '200':
-          description: "Response containing the answer to the question."
+          description: The generated document in the requested format.
           content:
-            application/json:
+            application/octet-stream:
               schema:
-                $ref: '#/components/schemas/QnAResponse'
+                type: string
+                format: binary
         '400':
-          description: "Bad request, invalid input provided"
+          description: Invalid request parameters.
         '500':
-          description: "Internal server error, QnA system failed"
+          description: Internal server error.
+
+
+  # '/qna/ask':
+  #   post:
+  #     summary: "Ask a question to the QnA system"
+  #     description: |
+  #       Sends a question to the QnA system and retrieves an answer. Optionally, the response can include hyperlinks to relevant concepts based on the `hyperlink_concepts` flag.
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/QnARequest'
+  #     responses:
+  #       '200':
+  #         description: "Response containing the answer to the question."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/QnAResponse'
+  #       '400':
+  #         description: "Bad request, invalid input provided"
+  #       '500':
+  #         description: "Internal server error, QnA system failed"
+  # '/requirements/extract':
+  #   post:
+  #     summary: "Extract requirements from written text"
+  #     description: |
+  #       This endpoint accepts a plain text input and extracts specific requirements from the text. It processes the input to identify requirements, returning a list of extracted requirements in the response.
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/ExtractRequest'
+  #     responses:
+  #       '200':
+  #         description: "A list of extracted requirements."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/ExtractRequirementResponse'
+  #       '400':
+  #         description: "Bad request, invalid input provided"
+  #       '500':
+  #         description: "Internal server error, extraction failed"
+          
+  # '/requirements/parse':
+  #   post:
+  #     summary: "Parse a written requirement into a graph"
+  #     description: |
+  #       Converts a textual requirement into a structured graph representation. This endpoint accepts plain text input describing a requirement and processes it to generate a JSON structure that represents the requirement as a graph. The graph includes conditions, systems, and performances.
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/ParseRequirementRequest'
+  #     responses:
+  #       '200':
+  #         description: "JSON structure generated successfully"
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/ParseRequirementResponse'
+  #       '400':
+  #         description: "Bad request, invalid input provided"
+  #       '500':
+  #         description: "Internal server error, conversion failed"  
           
 components:
   schemas:
-    ExtractRequest:
+    SearchConceptsRequest:
       type: object
       properties:
         text:
           type: string
-          description: "The written text from which to extract requirements."
-          example: "The system shall allow users to reset their passwords securely."
-        language:
+          description: "Plain text to analyze for concepts."
+        document:
           type: string
-          description: "The language of the text (e.g., 'en', 'fr')."
-          example: "en"
-
-    ExtractRequirementResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          description: "The status of the extraction operation."
-          example: "success"
-        requirements:
+          format: binary
+          description: "A file to analyze for concepts."
+        uris:
           type: array
-          description: "A list of extracted requirements."
           items:
-            type: string
-            description: "A single requirement extracted from the text."
+            type: object
+            properties:
+              uri:
+                type: string
+                format: uri
+                description: "The URI of the concept scheme."
+              language:
+                type: string
+                description: "The language of the concept scheme."
+            required:
+              - uri
+              - language
+          description: "An array of dictionaries, where each dictionary contains the URI of the concept scheme and its language."
           example:
-            - "The system shall allow users to reset their passwords securely."
-            - "The system must support two-factor authentication."
+            - uri: "http://example.com/scheme1"
+              language: "en"
+            - uri: "http://example.com/scheme2"
+              language: "nl"
+
+      oneOf:
+        - required: [text, uris]
+        - required: [document, uris]
+      description: "Input for searching concepts."
     
-    ParseRequirementRequest:
+    SearchConceptsResponse:
       type: object
       properties:
-        textchunk:
+        document_id:
           type: string
-          description: "The text to be converted to a JSON structure."
-        language:
-          type: string
-          description: "The language of the text (e.g., 'en', 'fr', etc.)."
-        flag_errors:
-          type: boolean
-          description: "Whether to flag errors encountered during conversion."
-        format:
-          type: string
-          enum: ["json", "xml", "yaml"]
-          description: "The format of the output."
-
-    ParseRequirementResponse:
-      type: object
-      description: "A JSON structure that represents the parsed requirement. To be disclosed."
-
-    # TagConceptsRequest:
-    #   type: object
-    #   properties:
-    #     text:
-    #       type: string
-    #       description: "Input text."
-    #       example: "The quick brown fox jumps over the lazy dog."
-    #     uri:
-    #       type: string
-    #       description: "Identifier (URI) of the thesaurus."
-    #     language:
-    #       type: string
-    #       description: "Language code to process the text (e.g., 'en' for English, 'nl' for Dutch)."      
-    #   required:
-    #     - text
-    #     - uri
-    #     - language
-
-    # TagConceptsResponse:
-    #   type: object
-    #   properties:
-    #     linkedText:
-    #       type: string
-    #       example: '<a href="https://example.com/word/brown">brown</a> fox jumps over the <a href="https://example.com/word/dog">dog</a>.'
-
+          description: An optional document identifier.
+        hits:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              concepts:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    prefLabel:
+                      type: string
+                      description: Preferred label of the concept.
+                    altLabel:
+                      type: string
+                      description: Alternate label for the concept, if available.
+                    description:
+                      type: string
+                      description: Detailed description of the concept.
+                    uri:
+                      type: string
+                      format: uri
+                      description: The URI of the concept.
+                    probability:
+                      type: number
+                      format: float
+                      description: Probability score indicating relevance.
+              count:
+                type: integer
+                description: Total number of concepts found in this category.
+              relevance:
+                type: number
+                format: float
+                description: Relevance score for this group of concepts.
+              contexts:
+                type: array
+                items:
+                  type: string
+                description: Context sentences where the concepts were found.
+        non_hits:
+          type: object
+          properties:
+            top_k_ngrams:
+              type: array
+              items:
+                type: object
+                properties:
+                  ngram:
+                    type: string
+                    description: The n-gram text.
+                  frequency:
+                    type: integer
+                    description: Frequency of occurrence in the document.
+                  tfidf_score:
+                    type: number
+                    format: float
+                    description: TF-IDF score for the n-gram.
+        config:
+          type: object
+          properties:
+            document_id:
+              type: string
+              description: The ID of the processed document.
+            thesauri_id:
+              type: array
+              items:
+                type: string
+              description: List of thesauri IDs used during processing.
+            top_k:
+              type: integer
+              description: The number of top results considered.
+    
+        
     TagTextRequest:
       type: object
       properties:
@@ -359,17 +464,15 @@ components:
           type: string
           description: "Input text."
           example: "The quick brown fox jumps over the lazy dog."
-        uris:
-          type: array
-          items:
+        hits: 
+          type: object
+          additionalProperties:
             type: string
             format: uri
-          description: "A list of URIs representing the concept schemes for tagging."
-          example: ["http://example.com/scheme1", "http://example.com/scheme2"]
-        language:
-          type: string
-          description: "Language code to process the text (e.g., 'en' for English)."
-          example: "en"
+          description: "A dictionary where the keys are terms and the values are their corresponding URIs in the concept scheme(s)."
+          example: 
+            menggranulaat: "http://example.com/uri-1"
+            actieraam: "http://example.com/uri-2"
         first_only:
           type: boolean
           description: "If true, only the first matching concept will be used."
@@ -408,17 +511,15 @@ components:
           type: string
           format: binary
           description: "The file to be uploaded for concept tagging (e.g., HTML or TXT document)."
-        uris:
-          type: array
-          items:
+        hits: 
+          type: object
+          additionalProperties:
             type: string
             format: uri
-          description: "The URI or list of URIs of the concept scheme(s) to be used for tagging."
-          example: ["http://example.com/scheme1", "http://example.com/scheme2"]
-        language:
-          type: string
-          description: "The language of the text in the document (e.g., 'en')."
-          example: "en"
+          description: "A dictionary where the keys are terms and the values are their corresponding URIs in the concept scheme(s)."
+          example: 
+            term A: "http://example.com/uri-1"
+            term B: "http://example.com/uri-2" 
         first_only:
           type: boolean
           description: "Whether to tag only the first occurrence of each concept in the document."
@@ -456,36 +557,114 @@ components:
           description: "The overall status of the document tagging operation."
           example: "success"
 
-    QnARequest:
+    ConvertConceptsRequest:
       type: object
       properties:
-        question:
+        concepts:
+          type: array
+          items:
+            type: object
+            properties:
+              term:
+                type: string
+                description: The term of the concept.
+              uri:
+                type: string
+                format: uri
+                description: The URI of the concept.
+            required:
+              - term
+              - uri
+          description: A list of concepts to convert into a document.
+        format:
           type: string
-          description: "The question to ask the Question and Answer (QnA) system."
-          example: "Aan welke eisen moet schoon metselwerk voldoen?"
-        language:
-          type: string
-          description: "The language of the question (e.g., 'en', 'fr')."
-          example: "nl"
-        hyperlink_concepts:
-          type: boolean
-          description: "Flag indicating whether to include hyperlinks for relevant concepts in the response."
-          example: true
+          enum: [csv, html, word]
+          description: The format of the output document.
+      required:
+        - concepts
+        - format
+      description: Input data for converting concepts to a document.
 
-    QnAResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          description: "The status of the QnA operation."
-          example: "success"
-        answer:
-          type: string
-          description: "The answer to the question, with optional hyperlinks to concepts."
-        hyperlinks_included:
-          type: boolean
-          description: "Whether hyperlinks to relevant concepts were included in the answer."
-          example: true          
+    # ExtractRequest:
+    #   type: object
+    #   properties:
+    #     text:
+    #       type: string
+    #       description: "The written text from which to extract requirements."
+    #       example: "The system shall allow users to reset their passwords securely."
+    #     language:
+    #       type: string
+    #       description: "The language of the text (e.g., 'en', 'fr')."
+    #       example: "en"
+
+    # ExtractRequirementResponse:
+    #   type: object
+    #   properties:
+    #     status:
+    #       type: string
+    #       description: "The status of the extraction operation."
+    #       example: "success"
+    #     requirements:
+    #       type: array
+    #       description: "A list of extracted requirements."
+    #       items:
+    #         type: string
+    #         description: "A single requirement extracted from the text."
+    #       example:
+    #         - "The system shall allow users to reset their passwords securely."
+    #         - "The system must support two-factor authentication."
+    
+    # ParseRequirementRequest:
+    #   type: object
+    #   properties:
+    #     textchunk:
+    #       type: string
+    #       description: "The text to be converted to a JSON structure."
+    #     language:
+    #       type: string
+    #       description: "The language of the text (e.g., 'en', 'fr', etc.)."
+    #     flag_errors:
+    #       type: boolean
+    #       description: "Whether to flag errors encountered during conversion."
+    #     format:
+    #       type: string
+    #       enum: ["json", "xml", "yaml"]
+    #       description: "The format of the output."
+
+    # ParseRequirementResponse:
+    #   type: object
+    #   description: "A JSON structure that represents the parsed requirement. To be disclosed."
+    
+    # QnARequest:
+    #   type: object
+    #   properties:
+    #     question:
+    #       type: string
+    #       description: "The question to ask the Question and Answer (QnA) system."
+    #       example: "Aan welke eisen moet schoon metselwerk voldoen?"
+    #     language:
+    #       type: string
+    #       description: "The language of the question (e.g., 'en', 'fr')."
+    #       example: "nl"
+    #     hyperlink_concepts:
+    #       type: boolean
+    #       description: "Flag indicating whether to include hyperlinks for relevant concepts in the response."
+    #       example: true
+
+    # QnAResponse:
+    #   type: object
+    #   properties:
+    #     status:
+    #       type: string
+    #       description: "The status of the QnA operation."
+    #       example: "success"
+    #     answer:
+    #       type: string
+    #       description: "The answer to the question, with optional hyperlinks to concepts."
+    #     hyperlinks_included:
+    #       type: boolean
+    #       description: "Whether hyperlinks to relevant concepts were included in the answer."
+    #       example: true          
               
   securitySchemes:
     apiKey:
