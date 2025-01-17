@@ -483,6 +483,14 @@ components:
             type: string
           description: "A list of tags or concepts to exclude from the results."
           example: ["http://example.com/exclude1", "http://example.com/exclude2"]
+        labelMapping:
+          type: object
+          description: "An object representing the mapping from alternative labels to preferred labels."
+          additionalProperties:
+            type: string
+          example: 
+            "altLabel1": "prefLabel1"
+            "altLabel2": "prefLabel2"
         min_length:
           type: integer
           description: "The minimum length of the matching text (in characters) to be tagged."
@@ -530,6 +538,14 @@ components:
             type: string
           description: "A list of URIs that should be excluded from the tagging process."
           example: ["http://example.com/exclude1", "http://example.com/exclude2"]
+        labelMapping:
+          type: object
+          description: "An object representing the mapping from alternative labels to preferred labels."
+          additionalProperties:
+            type: string
+          example: 
+            "altLabel1": "prefLabel1"
+            "altLabel2": "prefLabel2"
         min_length:
           type: integer
           description: "The minimum length of a concept that should be tagged."
