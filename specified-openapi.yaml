@@ -119,48 +119,6 @@ paths:
                     description: "Details about the error."
                     example: "An unexpected error occurred while processing the RDF data."
                     
-
-  '/api/concepts/tag/text':
-    post:
-      summary: "Tag concepts in a text"
-      description: "This endpoint processes a string of text and replaces concepts based on the provided thesaurus identifier (URI) and language code."
-      operationId: tagText
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TagTextRequest'
-      responses:
-        '200':
-          description: "The modified text with applied tags."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TagTextResponse'
-        '400':
-          description: "Invalid input provided. Either missing required fields or incorrect values."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: "Error message explaining the invalid input."
-                    example: "Missing required fields or invalid URIs."
-        '500':
-          description: "Internal server error"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: "Error message describing what went wrong."
-                    example: "Error processing the text."
-
   '/api/concepts/search/hits':
     post:
       summary: "Find concepts in a text or a document"
@@ -243,6 +201,46 @@ paths:
                     description: "Error message describing what went wrong."
                     example: "Error processing the text."
 
+  '/api/concepts/tag/text':
+    post:
+      summary: "Tag concepts in a text"
+      description: "This endpoint processes a string of text and replaces concepts based on the provided thesaurus identifier (URI) and language code."
+      operationId: tagText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagTextRequest'
+      responses:
+        '200':
+          description: "The modified text with applied tags."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagTextResponse'
+        '400':
+          description: "Invalid input provided. Either missing required fields or incorrect values."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: "Error message explaining the invalid input."
+                    example: "Missing required fields or invalid URIs."
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: "Error message describing what went wrong."
+                    example: "Error processing the text."
 
   '/api/concepts/tag/document':
     post:
