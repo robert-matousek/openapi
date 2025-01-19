@@ -118,47 +118,6 @@ paths:
                     type: string
                     description: "Details about the error."
                     example: "An unexpected error occurred while processing the RDF data."
-
-  '/api/concepts/search':
-    post:
-      summary: "Find concepts in a text or a document"
-      description: ""
-      operationId: searchConcepts
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SearchConceptsRequest'
-      responses:
-        '200':
-          description: "The hits, non-hits and configuration."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SearchConceptsResponse'
-        '400':
-          description: "Invalid input provided. Either missing required fields or incorrect values."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: "Error message explaining the invalid input."
-                    example: "Missing required fields or invalid URIs."
-        '500':
-          description: "Internal server error"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: "Error message describing what went wrong."
-                    example: "Error processing the text."
                     
 
   '/api/concepts/tag/text':
@@ -201,6 +160,89 @@ paths:
                     type: string
                     description: "Error message describing what went wrong."
                     example: "Error processing the text."
+
+  '/api/concepts/search/hits':
+    post:
+      summary: "Find concepts in a text or a document"
+      description: "Identifies and returns concepts (hits) found in the provided text or document."
+      operationId: searchHits
+      requestBody:  
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchHitsRequest'
+      responses:
+        '200':
+          description: "The identified concepts (hits) and associated metadata."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchHitsResponse'          
+        '400':
+          description: "Invalid input provided."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: "Error message describing what went wrong."
+                    example: "Error processing the text."
+        '500':
+          description: "Internal server error."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: "Error message describing what went wrong."
+                    example: "Error processing the text."
+
+  '/api/concepts/search/misses':
+    post:
+      summary: "Find top n-grams from a text or a document"
+      description: "Identifies and returns n-grams with the highest TF-IDF scores that do not match concepts in the thesauri."
+      operationId: searchMisses
+      requestBody:  
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchMissesRequest'
+      responses:
+        '200':
+          description: "The n-grams with the highest TF-IDF scores and associated metadata."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchMissesResponse'
+        '400':
+          description: "Invalid input provided."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: "Error message describing what went wrong."
+                    example: "Error processing the text."
+        '500':
+          description: "Internal server error."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: "Error message describing what went wrong."
+                    example: "Error processing the text."
+
 
   '/api/concepts/tag/document':
     post:
@@ -341,7 +383,7 @@ paths:
           
 components:
   schemas:
-    SearchConceptsRequest:
+    SearchHitsRequest:
       type: object
       properties:
         text:
@@ -378,12 +420,9 @@ components:
         - required: [document, uris]
       description: "Input for searching concepts."
     
-    SearchConceptsResponse:
+    SearchHitsResponse:
       type: object
       properties:
-        document_id:
-          type: string
-          description: An optional document identifier.
         hits:
           type: object
           additionalProperties:
@@ -396,67 +435,77 @@ components:
                   properties:
                     prefLabel:
                       type: string
-                      description: Preferred label of the concept.
+                      description: "Preferred label of the concept."
                     altLabel:
                       type: string
-                      description: Alternate label for the concept, if available.
+                      description: "Alternate label for the concept, if available."
                     description:
                       type: string
-                      description: Detailed description of the concept.
+                      description: "Detailed description of the concept."
                     uri:
                       type: string
                       format: uri
-                      description: The URI of the concept.
+                      description: "The URI of the concept."
                     probability:
                       type: number
                       format: float
-                      description: Probability score indicating relevance.
+                      description: "Probability score indicating relevance."
               count:
                 type: integer
-                description: Total number of concepts found in this category.
+                description: "Total number of concepts found in this category."
               relevance:
                 type: number
                 format: float
-                description: Relevance score for this group of concepts.
+                description: "Relevance score for this group of concepts."
               contexts:
                 type: array
                 items:
                   type: string
-                description: Context sentences where the concepts were found.
+                description: "Context sentences where the concepts were found."
+
+    SearchMissesRequest:
+      type: object
+      properties:
+        document_path:
+          type: string
+          description: "The path to the uploaded document (in /tmp dir) for which TF-IDF scores need to be computed."
+          example: "/tmp/uploaded_document.pdf"
+        lang_code:
+          type: string
+          description: "The language code to load the appropriate saved vectorizer."
+          example: "en"
+        existing_vocab:
+          type: array
+          items:
+            type: string
+          description: "A set of terms to exclude from the top results. This will filter out terms found in this vocabulary."
+          example: ["machine learning", "ai", "data science"]
+          default: []
+      required:
+        - document_path
+        - lang_code
+        - output_dir
+      description: "Request parameters to compute TF-IDF scores for a document and filter results based on existing vocabulary."
+
+    SearchMissesResponse:
+      type: object
+      properties:
         non_hits:
-          type: object
-          properties:
-            top_k_ngrams:
-              type: array
-              items:
-                type: object
-                properties:
-                  ngram:
-                    type: string
-                    description: The n-gram text.
-                  frequency:
-                    type: integer
-                    description: Frequency of occurrence in the document.
-                  tfidf_score:
-                    type: number
-                    format: float
-                    description: TF-IDF score for the n-gram.
-        config:
-          type: object
-          properties:
-            document_id:
-              type: string
-              description: The ID of the processed document.
-            thesauri_id:
-              type: array
-              items:
+          type: array
+          items:
+            type: object
+            properties:
+              ngram:
                 type: string
-              description: List of thesauri IDs used during processing.
-            top_k:
-              type: integer
-              description: The number of top results considered.
-    
-        
+                description: "The n-gram text."
+              frequency:
+                type: integer
+                description: "Frequency of occurrence in the document."
+              tfidf_score:
+                type: number
+                format: float
+                description: "TF-IDF score for the n-gram."
+
     TagTextRequest:
       type: object
       properties:
