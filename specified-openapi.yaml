@@ -162,7 +162,7 @@ paths:
 
   '/api/concepts/search/misses':
     post:
-      summary: "Find top n-grams from a text or a document"
+      summary: "Find relevant concepts without a definition"
       description: "Identifies and returns n-grams with the highest TF-IDF scores that do not match concepts in the thesauri."
       operationId: searchMisses
       requestBody:  
