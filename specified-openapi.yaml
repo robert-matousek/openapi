@@ -472,6 +472,10 @@ components:
           type: string
           description: "The language code to load the appropriate saved vectorizer."
           example: "en"
+        top_k:
+          type: integer
+          description: "The maximum number of results to return."
+          default: 20
         existing_vocab:
           type: array
           items:
