@@ -1,47 +1,56 @@
----
-openapi: 3.0.0
+openapi: 3.0.1
 info:
-  title: FastAPI
-  version: 0.1.0
+  title: Specified API
+  description: |
+
+        Transform standards documents into machine-readable requirements.
+
+        ***
+
+        ## API Reference
+
+        The Specified API is organized around [REST](http://en.wikipedia.org/wiki/Representational_State_Transfer).
+        Our API has predictable resource-oriented URLs, accepts [form-encoded](https://en.wikipedia.org/wiki/POST_(HTTP)#Use_for_submitting_web_forms)
+        request bodies, returns [JSON-encoded](http://www.json.org/) responses, and uses standard HTTP response codes,
+        authentication, and verbs.
+
+        ***
+
+        ## API Authentication
+
+        The Specified API uses [API keys](/docs/keys) to authenticate requests.
+        Authentication to the API is performed via HTTP Basic Auth. Provide your APP ID and API key as the basic auth username value.
+        You do not need to provide a password. All API requests must be made over HTTPS.
+        Calls made over plain HTTP will fail or calls without authentication will fail.
+
+        To request API keys, [contact support](mailto:support@specified.ai).
+        
+  termsOfService: https://specified.ai/terms-of-service.html
+  contact:
+    name: Specified.ai
+    url: https://specified.ai/
+    email: support@specified.ai
+  version: '1.0'
+servers:
+  - url: https://api.specified.ai/v1
+    description: Main server
+  - url: https://staging-api.specified.ai
+    description: Internal staging server for testing
 paths:
-  "/":
-    get:
-      summary: Health Check
-      operationId: health_check__get
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-  "/api/concepts/process":
+  /api/v1/concepts/process:
     post:
       tags:
-      - Process RDF
-      summary: Process Concepts
+        - Process
+      summary: Process vocabulary.
       description: |-
-        Process concepts from either:
-
-        1. A URL to the RDF file.
-
-        2. An uploaded RDF file.
-
-        Args:
-            url (HttpUrl, optional): The URL of the RDF file (if using a URL).
-            file (UploadFile, optional): The RDF file uploaded directly.
-            rdf_format (str): The format of the RDF file (xml, json, or turtle).
-            uri (str): The URI of the concept scheme being processed.
-            language (str): The language code for processing concepts (e.g., "en" for English).
-
-
-        Returns:
-            dict: A message confirming the successful processing of the concepts.
-      operationId: process_concepts_api_concepts_process_post
+        This endpoint allows the processing of RDF data either from a provided URL or from an uploaded RDF file. 
+        The RDF data should be in one of the supported formats: `xml`, `json`, or `turtle`.
+      operationId: process_concepts_api_v1_concepts_process_post
       requestBody:
         content:
           multipart/form-data:
             schema:
-              "$ref": "#/components/schemas/Body_process_concepts_api_concepts_process_post"
+              $ref: '#/components/schemas/Body_process_concepts_api_v1_concepts_process_post'
         required: true
       responses:
         '200':
@@ -49,24 +58,22 @@ paths:
           content:
             application/json:
               schema: {}
+        '400':
+          description: Bad Request – Invalid input
         '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/HTTPValidationError"
-  "/api/concepts/search/hits":
+          description: Unprocessable Entity
+  /api/v1/concepts/search/hits:
     post:
       tags:
-      - Vocabulary hits
-      summary: Find Hits Text
-      description: Finds hits in the given text based on the specified URIs and languages.
-      operationId: find_hits_text_api_concepts_search_hits_post
+        - Search
+      summary: Search hits.
+      description: Find concepts in a text or document.
+      operationId: find_hits_text_api_v1_concepts_search_hits_post
       requestBody:
         content:
           multipart/form-data:
             schema:
-              "$ref": "#/components/schemas/Body_find_hits_text_api_concepts_search_hits_post"
+              $ref: '#/components/schemas/Body_find_hits_text_api_v1_concepts_search_hits_post'
         required: true
       responses:
         '200':
@@ -74,229 +81,291 @@ paths:
           content:
             application/json:
               schema: {}
+        '400':
+          description: Bad Request – Invalid input
+        '404':
+          description: Not Found – The requested resource was not found
         '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/HTTPValidationError"
-  "/api/concepts/search/misses":
+          description: Unprocessable Entity
+        '500':
+          description: Internal Server Error
+  /api/v1/concepts/search/misses:
     post:
       tags:
-      - Vocabulary misses
-      summary: Search Misses
-      description: "Returns the top n-grams with the highest TF-IDF scores that do
-        not match any concepts from the provided URIs.\n\n:param request: The request
-        body containing the document path, language code, \n                top_k
-        value, and vocabulary.\n:return: A list of non-matching n-grams with their
-        frequency and TF-IDF score."
-      operationId: search_misses_api_concepts_search_misses_post
+        - Search
+      summary: Search misses.
+      description: Find the most important word groups that appear frequently in the text but are not common overall, while skipping any concepts found.
+      operationId: search_misses_api_v1_concepts_search_misses_post
       requestBody:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/SearchMissesRequest"
+              $ref: '#/components/schemas/SearchMissesRequest'
         required: true
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
               schema:
-                "$ref": "#/components/schemas/HTTPValidationError"
-  "/api/concepts/tag/text":
+                $ref: '#/components/schemas/SearchMissesResponse'
+        '400':
+          description: Bad Request – Invalid input
+        '422':
+          description: Unprocessable Entity
+        '500':
+          description: Internal Server Error – Unexpected error
+  /api/v1/concepts/tag/text:
     post:
       tags:
-      - Tag text
-      summary: Tag Text
-      operationId: tag_text_api_concepts_tag_text_post
+        - Tag
+      summary: Tag text.
+      description: Tag concepts in a text.
+      operationId: tag_text_api_v1_concepts_tag_text_post
       requestBody:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/TagRequest"
+              $ref: '#/components/schemas/TagRequest'
         required: true
       responses:
         '200':
-          description: Successful Response
+          description: File successfully generated
           content:
             application/json:
               schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
+            application/octet-stream:
               schema:
-                "$ref": "#/components/schemas/HTTPValidationError"
-  "/api/concepts/export":
+                type: string
+                format: binary
+        '400':
+          description: Bad Request – Invalid input
+        '422':
+          description: Unprocessable Entity
+        '500':
+          description: Internal Server Error – Unexpected error
+  /api/v1/concepts/export:
     post:
       tags:
-      - Exports tags
-      summary: Convert Concepts
-      description: |-
-        Converts a list of concepts into a specified document format.
-
-        :param request: The request body containing the list of concepts and the desired output format.
-        :return: A message confirming the conversion or an error.
-      operationId: convert_concepts_api_concepts_export_post
+        - Export
+      summary: Export concepts.
+      description: Export terms and definitions.
+      operationId: convert_concepts_api_v1_concepts_export_post
       requestBody:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/ConvertConceptsRequest"
+              $ref: '#/components/schemas/ConvertConceptsRequest'
         required: true
       responses:
         '200':
-          description: Successful Response
+          description: File successfully generated
           content:
             application/json:
               schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
+            application/octet-stream:
               schema:
-                "$ref": "#/components/schemas/HTTPValidationError"
+                type: string
+                format: binary
+        '400':
+          description: Bad Request – Invalid input
+        '422':
+          description: Unprocessable Entity
 components:
   schemas:
-    Body_find_hits_text_api_concepts_search_hits_post:
+    Body_find_hits_text_api_v1_concepts_search_hits_post:
       properties:
         text:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: 'null'
           title: Text
+          description: The text to be tagged (provide this OR a file, not both)
         uris:
-          anyOf:
-          - type: string
-          - items:
-              type: string
-            type: array
+          items:
+            type: string
+          type: array
           title: Uris
+          description: One or more URIs of the concept scheme. For multiple values, use repeated fields.
         language:
           type: string
           title: Language
+          description: Language code (e.g., 'nl'). Must be exactly 2 characters.
         file:
           anyOf:
-          - type: string
-            format: binary
-          - type: 'null'
+            - type: string
+              format: binary
+            - type: 'null'
           title: File
+          description: Optional file upload. If provided, 'text' must be omitted.
       type: object
       required:
-      - uris
-      - language
-      title: Body_find_hits_text_api_concepts_search_hits_post
-    Body_process_concepts_api_concepts_process_post:
+        - uris
+        - language
+      title: Body_find_hits_text_api_v1_concepts_search_hits_post
+    Body_process_concepts_api_v1_concepts_process_post:
       properties:
-        request_body:
-          "$ref": "#/components/schemas/ProcessConceptsRequest"
-        file:
+        url:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Url
+          description: The URL of the RDF file (if using a URL).
+        rdf_format:
           type: string
-          format: binary
+          title: Rdf Format
+          description: The format of the RDF file (xml, json, turtle)
+        uri:
+          type: string
+          title: Uri
+          description: The URI of the concept scheme
+        language:
+          type: string
+          title: Language
+          description: Language code (e.g., 'en', 'nl')
+        file:
+          anyOf:
+            - type: string
+              format: binary
+            - type: 'null'
           title: File
-          description: The RDF file to be uploaded.
+          description: The RDF file to upload
       type: object
       required:
-      - request_body
-      title: Body_process_concepts_api_concepts_process_post
+        - uri
+        - language
+      title: Body_process_concepts_api_v1_concepts_process_post
     ConvertConceptsRequest:
       properties:
         concepts:
           items:
-            "$ref": "#/components/schemas/Tag"
+            $ref: '#/components/schemas/Term'
           type: array
           title: Concepts
           description: A list of concepts to convert into a document.
         format:
           type: string
-          pattern: "^(csv|html|word)$"
+          enum:
+            - csv
+            - html
+            - docx
           title: Format
+          description: The desired output format.
           example: csv
-      type: object
-      required:
-      - concepts
-      - format
-      title: ConvertConceptsRequest
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            "$ref": "#/components/schemas/ValidationError"
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ProcessConceptsRequest:
-      properties:
-        url:
-          anyOf:
-          - type: string
-            maxLength: 2083
-            minLength: 1
-            format: uri
-          - type: 'null'
-          title: Url
-          description: The URL of the RDF file.
-        uri:
-          type: string
-          minLength: 1
-          title: Uri
-          description: The URI of the concept scheme being processed.
-          example: http://example.com/scheme
         language:
           type: string
+          pattern: ^[a-z]{2}$
           title: Language
-          description: The language of the text.
-          example: nl
-        rdf_format:
-          type: string
-          pattern: "^(xml|json|turtle)$"
-          title: Rdf Format
-          description: 'The format of the RDF file. Allowed values: xml, json, turtle'
-          example: turtle
+          description: The language code (ISO 639-1) for the document.
+          example: en
       type: object
       required:
-      - uri
-      - language
-      - rdf_format
-      title: ProcessConceptsRequest
-      description: Pydantic model to validate and parse the request body for /api/concepts/process
-        endpoint.
+        - concepts
+        - format
+        - language
+      title: ConvertConceptsRequest
+    NgramHit:
+      properties:
+        ngram:
+          type: string
+          title: Ngram
+          description: The n-gram text.
+        tfidf_score:
+          type: number
+          title: Tfidf Score
+          description: The TF-IDF score for the given n-gram.
+      type: object
+      required:
+        - ngram
+        - tfidf_score
+      title: NgramHit
     SearchMissesRequest:
       properties:
-        document_path:
+        doc_id:
           type: string
-          title: Document Path
+          title: Doc Id
+          description: The document identifier
         lang_code:
           type: string
+          enum:
+            - nl
+            - en
           title: Lang Code
+          description: Language code
+          examples:
+            - nl
+            - en
         top_k:
           type: integer
+          minimum: 1
           title: Top K
+          description: Number of results to return
+          default: 20
         existing_vocab:
           items:
             type: string
           type: array
           title: Existing Vocab
+          description: List of terms to exclude from the results
+          default: []
+          examples:
+            - - term1
+              - term2
       type: object
       required:
-      - document_path
-      - lang_code
-      - top_k
-      - existing_vocab
+        - doc_id
+        - lang_code
       title: SearchMissesRequest
-    Tag:
+    SearchMissesResponse:
+      properties:
+        non_hits:
+          items:
+            $ref: '#/components/schemas/NgramHit'
+          type: array
+          title: Non Hits
+          description: A list of n-grams that did not match.
+      type: object
+      required:
+        - non_hits
+      title: SearchMissesResponse
+    TagRequest:
+      properties:
+        uuid:
+          type: string
+          title: Uuid
+          description: The UUID of the document from the search request.
+        selected_uris:
+          items:
+            type: string
+          type: array
+          title: Selected Uris
+          description: The URI or list of URIs of the selected concepts.
+          examples:
+            - http://example.com/concept/raamkozijn
+        first_only:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: First Only
+          description: Whether to tag only the first occurrence of each concept.
+          default: false
+      type: object
+      required:
+        - uuid
+        - selected_uris
+      title: TagRequest
+      description: |-
+        Pydantic model to validate and parse the request body for /api/concepts/tag endpoint.
+
+        param: text (str): The text to be tagged.
+        param: selected_uris (Union[str, List[str]]): The URI or list of URIs of the selected concepts.
+        param: first_only (Optional[bool]): Tag first hit.
+    Term:
       properties:
         term:
           type: string
           title: Term
-          description: The term of the concept.
+          description: The term used in the document.
         uri:
           type: string
           maxLength: 2083
@@ -306,61 +375,6 @@ components:
           description: The URI of the concept.
       type: object
       required:
-      - term
-      - uri
-      title: Tag
-    TagRequest:
-      properties:
-        uuid:
-          type: string
-          title: Uuid
-          description: The UUID of the document from the search request.
-        selected_uris:
-          anyOf:
-          - type: string
-          - items:
-              type: string
-            type: array
-          title: Selected Uris
-          description: The URI or list of URIs of the selected concepts.
-          examples:
-          - http://example.com/concept/raamkozijn
-        first_only:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: First Only
-          description: Whether to tag only the first occurrence of each concept.
-          default: false
-      type: object
-      required:
-      - uuid
-      - selected_uris
-      title: TagRequest
-      description: |-
-        Pydantic model to validate and parse the request body for /api/concepts/tag endpoint.
-
-        Attributes:
-            text (str): The text to be tagged.
-            selected_uris (Union[str, List[str]]): The URI or list of URIs of the selected concepts.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+        - term
+        - uri
+      title: Term
